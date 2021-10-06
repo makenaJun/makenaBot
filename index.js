@@ -1,14 +1,20 @@
 const TelegramApi = require('node-telegram-bot-api');
 const {keyForRestart, generateKeyForGame} = require("./modules/generatorsKeyboard/generateKeyForGame");
+const axios = require("axios");
+const dotenv = require('dotenv');
 
-const token = '2051403434:AAGGYsqLduqYGkl078A7ERnQfsjrvud_UCQ';
+dotenv.config();
+
+
+const token = process.env.TOKEN;
 
 const bot = new TelegramApi(token, {polling: true});
 
 bot.setMyCommands([
     {command: '/start', description: 'Старт работы с ботом'},
     {command: '/info', description: 'Получить информацию о пользователе'},
-    {command: '/game', description: 'Игра угадай число'}
+    {command: '/game', description: 'Игра угадай число'},
+    {command: '/course', description: 'Курс доллара в Минске'}
 ])
 
 const stateGame = {};
@@ -40,6 +46,23 @@ const start = () => {
 
         if (text === "/game") {
             return await startNewGame(chatId);
+        }
+
+        if (text === "/all") {
+            return await bot.sendMessage(-576492586, `Тестовое оповещение по группам`);
+        }
+
+        if (text === "/course") {
+            const res = await axios.get('https://belarusbank.by/api/kursExchange', {
+                params: {
+                    city: 'минск'
+                }
+            });
+
+            return await bot.sendMessage(chatId, `
+            Покупка USD => ${res.data[0].USD_in}  |  Продажа USD => ${res.data[0].USD_out}
+           `
+            );
         }
 
         return await bot.sendMessage(chatId, "Я не понимаю, что ты хочешь!");
