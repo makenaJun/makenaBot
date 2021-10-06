@@ -15,4 +15,18 @@ const generateKeyForGame = () => {
     return result;
 }
 
-module.exports = generateKeyForGame;
+const keyForRestart = {
+    reply_markup: {
+        inline_keyboard: [
+            [{
+                text: 'Начать заново',
+                callback_data: 'game_again'
+            }]
+        ]
+    }
+}
+
+module.exports = {
+    generateKeyForGame,
+    keyForRestart
+};

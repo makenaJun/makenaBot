@@ -1,5 +1,5 @@
 const TelegramApi = require('node-telegram-bot-api');
-const generateKeyForGame = require("./modules/generatorsKeyboard/generateKeyForGame");
+const {keyForRestart, generateKeyForGame} = require("./modules/generatorsKeyboard/generateKeyForGame");
 
 const token = '2051403434:AAGGYsqLduqYGkl078A7ERnQfsjrvud_UCQ';
 
@@ -13,7 +13,7 @@ bot.setMyCommands([
 
 const stateGame = {};
 
-const startGame = async (chatId) => {
+const startNewGame = async (chatId) => {
     await bot.sendMessage(chatId, "Я сейчас загадаю число от 0 до 9, а ты попробуй отгадать");
     const randomNum = Math.floor(Math.random() * 10);
     stateGame[chatId] = randomNum;
@@ -22,17 +22,6 @@ const startGame = async (chatId) => {
             inline_keyboard: generateKeyForGame()
         }
     });
-}
-
-const keyForRestart = {
-    reply_markup: {
-        inline_keyboard: [
-            [{
-                text: 'Начать заново',
-                callback_data: 'game_again'
-            }]
-        ]
-    }
 }
 
 const start = () => {
@@ -46,11 +35,11 @@ const start = () => {
         }
 
         if (text === "/info") {
-            return bot.sendMessage(chatId, `Тебя зовут ${msg.from.first_name} ${msg.from.last_name}.`);
+            return await bot.sendMessage(chatId, `Тебя зовут ${msg.from.first_name} ${msg.from.last_name}.`);
         }
 
         if (text === "/game") {
-            return await startGame(chatId);
+            return await startNewGame(chatId);
         }
 
         return await bot.sendMessage(chatId, "Я не понимаю, что ты хочешь!");
@@ -61,13 +50,13 @@ const start = () => {
             const {data} = query;
 
             if (data === "game_again") {
-                return await startGame(chatId);
+                return await startNewGame(chatId);
             }
 
             if (+data === stateGame[chatId]) {
                 return await bot.sendMessage(chatId, `Ты отгадал я загадал число ${stateGame[chatId]}`, keyForRestart);
             } else {
-                await bot.sendMessage(chatId, `Неправильно! Попробуй еще!`, keyForRestart)
+                return await bot.sendMessage(chatId, `Неправильно! Я загадал число ${stateGame[chatId]}`, keyForRestart)
             }
         }
     )
